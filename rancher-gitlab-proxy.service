@@ -1,0 +1,16 @@
+[Unit]
+Description=rancher-gitlab-proxy
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=gitlab-www
+Group=gitlab-www
+ExecStart=/usr/local/bin/rancher_gitlab_proxy
+
+SyslogIdentifier=rancher-gitlab-proxy
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

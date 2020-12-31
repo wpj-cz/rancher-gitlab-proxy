@@ -9,6 +9,12 @@ import (
 	"strconv"
 	"strings"
 )
+
+// !!! ADJUST
+const gitlab_url = "https://gitlab.com"
+const rancher_url = "https://rancher-url.de"
+// !!! ADJUST
+
 ///////////////// MAIN
 func main() {
 	router := httprouter.New()
@@ -30,16 +36,16 @@ func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Para
 	v := req.URL.Query()
 	v.Add("response_type", "code")
 	v.Add("scope", "read_api")
-	target := "https://gitlab.sandstorm.de/oauth/authorize?" + v.Encode()
+	target := gitlab_url + "/oauth/authorize?" + v.Encode()
 	http.Redirect(w, req, target, http.StatusTemporaryRedirect)
 }
 
 func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	v := req.URL.Query()
 	v.Add("grant_type", "authorization_code")
-	v.Add("redirect_uri", "https://rancher.sandstorm.de/verify-auth")
+	v.Add("redirect_uri", rancher_url + "/verify-auth")
 
-	target := "https://gitlab.sandstorm.de/oauth/token?" + v.Encode()
+	target := gitlab_url + "/oauth/token?" + v.Encode()
 	http.Redirect(w, req, target, http.StatusTemporaryRedirect)
 }
 
@@ -220,7 +226,7 @@ func createGitlabClient(req *http.Request) *gitlab.Client {
 	authorizationHeader := req.Header.Get("Authorization")
 	t := strings.Split(authorizationHeader, " ")
 	token := t[1]
-	gitlabClient, err := gitlab.NewOAuthClient(token, gitlab.WithBaseURL("https://gitlab.sandstorm.de/api/v4"))
+	gitlabClient, err := gitlab.NewOAuthClient(token, gitlab.WithBaseURL(gitlab_url + "/api/v4"))
 	if err != nil {
 		panic(err)
 	}

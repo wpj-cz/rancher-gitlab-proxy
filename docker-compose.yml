@@ -1,0 +1,15 @@
+version: '3.3'
+
+services:
+  gitlab:
+    image: gitlab/gitlab-ce:latest
+    restart: always
+    ...
+
+  auth-proxy:
+    image: wpjsro/rancher-gitlab-proxy:latest
+    restart: always
+    environment:
+      GITLAB_URL: "https://gitlab.url"
+      RANCHER_URL: "https://rancher.url"
+      LISTEN_ADDRESS: "0.0.0.0:8888"

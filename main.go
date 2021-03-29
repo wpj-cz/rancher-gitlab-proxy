@@ -14,10 +14,15 @@ import (
 ///////////////// SETTINGS
 var gitlab_url = os.Getenv("GITLAB_URL")
 var rancher_url = os.Getenv("RANCHER_URL")
+var listen_address = os.Getenv("LISTEN_ADDRESS")
 
 
 ///////////////// MAIN
 func main() {
+	if listen_address == "" {
+		listen_address = "127.0.0.1:8888"
+	}
+	
 	router := httprouter.New()
 	router.GET("/login/oauth/authorize", oauthAuthorize)
 	router.POST("/login/oauth/access_token", oauthAccessToken)
@@ -26,8 +31,8 @@ func main() {
 	router.GET("/api/v3/teams/:id", apiV3TeamsId)
 	router.GET("/api/v3/search/users", apiV3SearchUsers)
 
-	fmt.Println("Listening to 127.0.0.1:8888")
-	if err := http.ListenAndServe("127.0.0.1:8888", router); err != nil {
+	fmt.Println("Listening to " + listen_address)
+	if err := http.ListenAndServe(listen_address, router); err != nil {
 		panic(err)
 	}
 }

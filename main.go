@@ -8,12 +8,13 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"os"
 )
 
-// !!! ADJUST
-const gitlab_url = "https://gitlab.com"
-const rancher_url = "https://rancher-url.de"
-// !!! ADJUST
+///////////////// SETTINGS
+var gitlab_url = os.Getenv("GITLAB_URL")
+var rancher_url = os.Getenv("RANCHER_URL")
+
 
 ///////////////// MAIN
 func main() {

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"net/http/httputil"
 	"os"
 )
 
@@ -50,6 +51,12 @@ func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Pa
 	v := req.URL.Query()
 	v.Add("grant_type", "authorization_code")
 	v.Add("redirect_uri", rancher_url + "/verify-auth")
+	
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+	  fmt.Println(err)
+	}
+	fmt.Println(string(requestDump))
 
 	target := gitlab_url + "/oauth/token?" + v.Encode()
 	http.Redirect(w, req, target, http.StatusTemporaryRedirect)

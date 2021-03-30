@@ -7,6 +7,6 @@ All credits goes to https://sandstorm.de/de/blog/post/making-rancher-2-and-gitla
 
 1. Run `wpjsro/rancher-gitlab-proxy:latest` Docker image next to Gitlab. Set `GITLAB_URL` and `RANCHER_URL` env variables, see example `docker-compose.yaml`. 
 1. Configure Gitlab - add config option from `gitlab.rb`
-1. Create Gitlab application with `read_api` scope
+1. Create Gitlab application with `read_api` scope and `https://<RANCHER_URL>/verify-auth` redirect URL
 1. Configure Rancher to use GitHub authentication, set enterprise host to your Gitlab url, fill in Application ID and Secret from Gitlab.
 1. Working Gitlab Rancher authentication :-)

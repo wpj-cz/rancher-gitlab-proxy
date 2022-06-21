@@ -40,6 +40,12 @@ func main() {
 
 ///////////////// API
 func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	requestDump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+	  fmt.Println(err)
+	}
+	fmt.Println(string(requestDump))
+	
 	v := req.URL.Query()
 	v.Add("response_type", "code")
 	v.Add("scope", "read_api")

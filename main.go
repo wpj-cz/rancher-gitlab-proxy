@@ -16,7 +16,7 @@ import (
 var gitlab_url = os.Getenv("GITLAB_URL")
 var rancher_url = os.Getenv("RANCHER_URL")
 var listen_address = os.Getenv("LISTEN_ADDRESS")
-
+var rancher_urls = make(map[string]string)
 
 ///////////////// MAIN
 func main() {
@@ -45,7 +45,11 @@ func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Para
 	  fmt.Println(err)
 	}
 	fmt.Println(string(requestDump))
-	
+
+	redirect_uri = r.URL.Query().Get('redirect_uri');
+	client_id = r.URL.Query().Get('client_id');
+	rancher_urls[client_id] = redirect_uri;
+
 	v := req.URL.Query()
 	v.Add("response_type", "code")
 	v.Add("scope", "read_api")
@@ -56,7 +60,14 @@ func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Para
 func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	v := req.URL.Query()
 	v.Add("grant_type", "authorization_code")
-	v.Add("redirect_uri", rancher_url + "/verify-auth")
+	
+	_, found := rancher_urls[client_id]
+	if found {
+		fmt.Println("Using url from cache")
+		v.Add("redirect_uri", rancher_urls[client_id])
+	} else {
+		v.Add("redirect_uri", rancher_url + "/verify-auth")
+	}
 	
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {

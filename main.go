@@ -50,6 +50,8 @@ func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Para
 	client_id := req.URL.Query().Get("client_id");
 	rancher_urls[client_id] = redirect_uri;
 
+	fmt.Println("redirect_uri", redirect_uri, "client_id", client_id, string(rancher_urls));
+
 	v := req.URL.Query()
 	v.Add("response_type", "code")
 	v.Add("scope", "read_api")
@@ -70,6 +72,8 @@ func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Pa
 	} else {
 		v.Add("redirect_uri", rancher_url + "/verify-auth")
 	}
+
+	fmt.Println("found", found, "client_id", client_id, string(rancher_urls));
 	
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {

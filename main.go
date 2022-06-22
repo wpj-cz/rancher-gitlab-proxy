@@ -60,10 +60,11 @@ func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Para
 }
 
 func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
+	req.ParseForm()
 	v := req.URL.Query()
 	v.Add("grant_type", "authorization_code")
 	
-	client_id := req.URL.Query().Get("client_id");
+	client_id := req.Form.Get("client_id");
 
 	_, found := rancher_urls[client_id]
 	if found {

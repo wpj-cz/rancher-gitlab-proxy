@@ -3,6 +3,8 @@ Authenticate Rancher users from Gitlab instance. Uses proxy simulating GitHub AP
 
 All credits goes to https://sandstorm.de/de/blog/post/making-rancher-2-and-gitlab-oauth-authentication-work-together.html
 
+It is now not required to fill `RANCHER_URL` env variable. Rancher url is autodetected from requests now. You can this way use same gitlab instance for several Rancher instances! :-)
+
 # Installation using docker
 
 1. Run `wpjsro/rancher-gitlab-proxy:latest` Docker image next to Gitlab. Set `GITLAB_URL` and `RANCHER_URL` env variables, see example `docker-compose.yaml`. 

@@ -42,12 +42,12 @@ func main() {
 func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {
-	  fmt.Println(err)
+	  fmt.Println(err);
 	}
-	fmt.Println(string(requestDump))
+	fmt.Println(string(requestDump));
 
-	redirect_uri := req.URL.Query().Get('redirect_uri');
-	client_id := req.URL.Query().Get('client_id');
+	redirect_uri := req.URL.Query().Get("redirect_uri");
+	client_id := req.URL.Query().Get("client_id");
 	rancher_urls[client_id] = redirect_uri;
 
 	v := req.URL.Query()
@@ -61,8 +61,8 @@ func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Pa
 	v := req.URL.Query()
 	v.Add("grant_type", "authorization_code")
 	
-	client_id := req.URL.Query().Get('client_id');
-	
+	client_id := req.URL.Query().Get("client_id");
+
 	_, found := rancher_urls[client_id]
 	if found {
 		fmt.Println("Using url from cache")

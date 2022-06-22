@@ -46,8 +46,8 @@ func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Para
 	}
 	fmt.Println(string(requestDump))
 
-	redirect_uri := r.URL.Query().Get('redirect_uri');
-	client_id := r.URL.Query().Get('client_id');
+	redirect_uri := req.URL.Query().Get('redirect_uri');
+	client_id := req.URL.Query().Get('client_id');
 	rancher_urls[client_id] = redirect_uri;
 
 	v := req.URL.Query()
@@ -60,6 +60,8 @@ func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Para
 func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	v := req.URL.Query()
 	v.Add("grant_type", "authorization_code")
+	
+	client_id := req.URL.Query().Get('client_id');
 	
 	_, found := rancher_urls[client_id]
 	if found {

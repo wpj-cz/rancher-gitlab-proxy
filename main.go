@@ -14,7 +14,7 @@ import (
 
 ///////////////// LOGGING
 
-type Logger {
+type Logger struct {
     handler http.Handler
 }
 

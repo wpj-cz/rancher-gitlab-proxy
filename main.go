@@ -199,8 +199,10 @@ type searchResult struct {
 	Items []*Account `json:"items"`
 }
 func apiV3SearchUsers(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	query, found := req.URL.Query().Get("q")
-	if !found {
+	query := req.URL.Query().Get("q")
+
+	// Support for old search
+	if !query {
 		query = ps.ByName("id")
 	}
 	gitlabClient := createGitlabClient(req)

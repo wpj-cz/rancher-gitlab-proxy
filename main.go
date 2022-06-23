@@ -20,7 +20,7 @@ type Logger struct {
 
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     fmt.Println(r.Method, r.URL.Path)
-    handler.ServeHTTP(w, r)
+    l.handler.ServeHTTP(w, r)
 }
 
 ///////////////// SETTINGS
@@ -45,7 +45,7 @@ func main() {
 	router.GET("/api/v3/search/users", apiV3SearchUsers)
 
 	fmt.Println("Listening to " + listen_address)
-	if err := http.ListenAndServe(listen_address, Logger{router}); err != nil {
+	if err := http.ListenAndServe(listen_address, &Logger{handler: router}); err != nil {
 		panic(err)
 	}
 }

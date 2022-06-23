@@ -202,7 +202,7 @@ func apiV3SearchUsers(w http.ResponseWriter, req *http.Request, ps httprouter.Pa
 	query := req.URL.Query().Get("q")
 
 	// Support for old search
-	if !query {
+	if len(query) == 0 {
 		query = ps.ByName("id")
 	}
 	gitlabClient := createGitlabClient(req)

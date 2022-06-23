@@ -12,6 +12,17 @@ import (
 	"os"
 )
 
+///////////////// LOGGING
+
+type Logger {
+    handler http.Handler
+}
+
+func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+    fmt.Println(r.Method, r.URL.Path)
+    handler.ServeHTTP(w, r)
+}
+
 ///////////////// SETTINGS
 var gitlab_url = os.Getenv("GITLAB_URL")
 var rancher_url = os.Getenv("RANCHER_URL")
@@ -29,11 +40,12 @@ func main() {
 	router.POST("/login/oauth/access_token", oauthAccessToken)
 	router.GET("/api/v3/user", apiV3User)
 	router.GET("/api/v3/user/:id", apiV3UserId)
+	router.GET("/api/v3/users/:id", apiV3UserId)
 	router.GET("/api/v3/teams/:id", apiV3TeamsId)
 	router.GET("/api/v3/search/users", apiV3SearchUsers)
 
 	fmt.Println("Listening to " + listen_address)
-	if err := http.ListenAndServe(listen_address, router); err != nil {
+	if err := http.ListenAndServe(listen_address, Logger{router}); err != nil {
 		panic(err)
 	}
 }

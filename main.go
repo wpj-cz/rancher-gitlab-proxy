@@ -40,7 +40,7 @@ func main() {
 	router.POST("/login/oauth/access_token", oauthAccessToken)
 	router.GET("/api/v3/user", apiV3User)
 	router.GET("/api/v3/user/:id", apiV3UserId)
-	router.GET("/api/v3/users/:id", apiV3UserId)
+	router.GET("/api/v3/users/:id", apiV3SearchUsers)
 	router.GET("/api/v3/teams/:id", apiV3TeamsId)
 	router.GET("/api/v3/search/users", apiV3SearchUsers)
 
@@ -199,7 +199,10 @@ type searchResult struct {
 	Items []*Account `json:"items"`
 }
 func apiV3SearchUsers(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	query := req.URL.Query().Get("q")
+	query, found := req.URL.Query().Get("q")
+	if !found {
+		query = req.URL.Query().Get("id")
+	}
 	gitlabClient := createGitlabClient(req)
 
 	searchResult := &searchResult{

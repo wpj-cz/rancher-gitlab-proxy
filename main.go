@@ -201,7 +201,7 @@ type searchResult struct {
 func apiV3SearchUsers(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	query, found := req.URL.Query().Get("q")
 	if !found {
-		query = req.URL.Query().Get("id")
+		query = ps.ByName("id")
 	}
 	gitlabClient := createGitlabClient(req)
 

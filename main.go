@@ -262,7 +262,7 @@ type Account struct {
 	ID        int    `json:"id,omitempty"`
 	Login     string `json:"login,omitempty"`
 	Name      string `json:"name,omitempty"`
-	AvatarURL string `json:"avatar_url,omitempty"`
+	AvatarURL string `json:"avatar_url"`
 	HTMLURL   string `json:"html_url,omitempty"`
 	// "Type" must be "user", "team", oder "org"
 	Type string `json:"type,omitempty"`

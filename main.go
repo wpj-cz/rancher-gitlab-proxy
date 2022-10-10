@@ -6,35 +6,35 @@ import (
 	"github.com/julienschmidt/httprouter"
 	"github.com/xanzy/go-gitlab"
 	"net/http"
-	"strconv"
-	"strings"
 	"net/http/httputil"
 	"os"
+	"strconv"
+	"strings"
 )
 
 ///////////////// LOGGING
 
 type Logger struct {
-    handler http.Handler
+	handler http.Handler
 }
 
 func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-    fmt.Println(r.Method, r.URL.Path)
-    l.handler.ServeHTTP(w, r)
+	fmt.Println(r.Method, r.URL.Path)
+	l.handler.ServeHTTP(w, r)
 }
 
-///////////////// SETTINGS
+// /////////////// SETTINGS
 var gitlab_url = os.Getenv("GITLAB_URL")
 var rancher_url = os.Getenv("RANCHER_URL")
 var listen_address = os.Getenv("LISTEN_ADDRESS")
 var rancher_urls = make(map[string]string)
 
-///////////////// MAIN
+// /////////////// MAIN
 func main() {
 	if listen_address == "" {
 		listen_address = "127.0.0.1:8888"
 	}
-	
+
 	router := httprouter.New()
 	router.GET("/login/oauth/authorize", oauthAuthorize)
 	router.POST("/login/oauth/access_token", oauthAccessToken)
@@ -50,19 +50,19 @@ func main() {
 	}
 }
 
-///////////////// API
+// /////////////// API
 func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {
-	  fmt.Println(err);
+		fmt.Println(err)
 	}
-	fmt.Println(string(requestDump));
+	fmt.Println(string(requestDump))
 
-	redirect_uri := req.URL.Query().Get("redirect_uri");
-	client_id := req.URL.Query().Get("client_id");
-	rancher_urls[client_id] = redirect_uri;
+	redirect_uri := req.URL.Query().Get("redirect_uri")
+	client_id := req.URL.Query().Get("client_id")
+	rancher_urls[client_id] = redirect_uri
 
-	fmt.Println("redirect_uri", redirect_uri, "client_id", client_id, rancher_urls);
+	fmt.Println("redirect_uri", redirect_uri, "client_id", client_id, rancher_urls)
 
 	v := req.URL.Query()
 	v.Add("response_type", "code")
@@ -75,22 +75,22 @@ func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Pa
 	req.ParseForm()
 	v := req.URL.Query()
 	v.Add("grant_type", "authorization_code")
-	
-	client_id := req.Form.Get("client_id");
+
+	client_id := req.Form.Get("client_id")
 
 	_, found := rancher_urls[client_id]
 	if found {
 		fmt.Println("Using url from cache")
 		v.Add("redirect_uri", rancher_urls[client_id])
 	} else {
-		v.Add("redirect_uri", rancher_url + "/verify-auth")
+		v.Add("redirect_uri", rancher_url+"/verify-auth")
 	}
 
-	fmt.Println("found", found, "client_id", client_id, rancher_urls);
-	
+	fmt.Println("found", found, "client_id", client_id, rancher_urls)
+
 	requestDump, err := httputil.DumpRequest(req, true)
 	if err != nil {
-	  fmt.Println(err)
+		fmt.Println(err)
 	}
 	fmt.Println(string(requestDump))
 
@@ -126,7 +126,7 @@ func apiV3UserId(w http.ResponseWriter, req *http.Request, ps httprouter.Params)
 
 	id, _ := strconv.Atoi(ps.ByName("id"))
 	// user
-	gitlabUser, _, err := gitlabClient.Users.GetUser(id)
+	gitlabUser, _, err := gitlabClient.Users.GetUser(id, gitlab.GetUsersOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -150,8 +150,7 @@ func apiV3UserTeams(w http.ResponseWriter, req *http.Request, ps httprouter.Para
 	result := make([]Team, 0, 0)
 
 	listGroupsOptions := &gitlab.ListGroupsOptions{
-		ListOptions: gitlab.ListOptions{
-		},
+		ListOptions: gitlab.ListOptions{},
 		// here, we only want to search for groups WHICH WE ARE MEMBER OF!!!
 		AllAvailable: &allAvailable,
 	}
@@ -185,7 +184,7 @@ func apiV3TeamsId(w http.ResponseWriter, req *http.Request, ps httprouter.Params
 
 	id, _ := strconv.Atoi(ps.ByName("id"))
 
-	gitlabGroup, _, err := gitlabClient.Groups.GetGroup(id)
+	gitlabGroup, _, err := gitlabClient.Groups.GetGroup(id, &gitlab.GetGroupOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -198,6 +197,7 @@ func apiV3TeamsId(w http.ResponseWriter, req *http.Request, ps httprouter.Params
 type searchResult struct {
 	Items []*Account `json:"items"`
 }
+
 func apiV3SearchUsers(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
 	query := req.URL.Query().Get("q")
 
@@ -252,8 +252,6 @@ func apiV3SearchUsers(w http.ResponseWriter, req *http.Request, ps httprouter.Pa
 	w.Write(jsonStr)
 }
 
-
-
 ///////////////// HELPERS
 
 // https://docs.github.com/en/free-pro-team@latest/rest/reference/users#get-the-authenticated-user
@@ -268,7 +266,7 @@ type Account struct {
 	Type string `json:"type,omitempty"`
 }
 
-//Team defines properties a team on github has
+// Team defines properties a team on github has
 type Team struct {
 	ID           int                    `json:"id,omitempty"`
 	Organization map[string]interface{} `json:"organization,omitempty"`
@@ -280,7 +278,7 @@ func createGitlabClient(req *http.Request) *gitlab.Client {
 	authorizationHeader := req.Header.Get("Authorization")
 	t := strings.Split(authorizationHeader, " ")
 	token := t[1]
-	gitlabClient, err := gitlab.NewOAuthClient(token, gitlab.WithBaseURL(gitlab_url + "/api/v4"))
+	gitlabClient, err := gitlab.NewOAuthClient(token, gitlab.WithBaseURL(gitlab_url+"/api/v4"))
 	if err != nil {
 		panic(err)
 	}
@@ -315,9 +313,9 @@ func convertGitlabGroupToTeam(gitlabGroup *gitlab.Group) *Team {
 	org["avatar_url"] = gitlabGroup.AvatarURL
 
 	return &Team{
-		ID: gitlabGroup.ID,
+		ID:           gitlabGroup.ID,
 		Organization: org,
-		Name: gitlabGroup.Name,
-		Slug: gitlabGroup.Path,
+		Name:         gitlabGroup.Name,
+		Slug:         gitlabGroup.Path,
 	}
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
@@ -23,8 +24,63 @@ func DebugLoggingMiddleware(rw http.ResponseWriter, r *http.Request, next http.H
 	}
 	fmt.Println(string(requestDump))
 
-	next(rw, r)
-	// do some stuff after
+	lrw := NewResponseWriterWrapper(rw)
+
+	next(lrw, r)
+
+	fmt.Println(lrw)
+}
+
+// ResponseWriterWrapper struct is used to log the response
+type ResponseWriterWrapper struct {
+	w          *http.ResponseWriter
+	body       *bytes.Buffer
+	statusCode *int
+}
+
+// NewResponseWriterWrapper static function creates a wrapper for the http.ResponseWriter
+func NewResponseWriterWrapper(w http.ResponseWriter) ResponseWriterWrapper {
+	var buf bytes.Buffer
+	var statusCode int = 200
+	return ResponseWriterWrapper{
+		w:          &w,
+		body:       &buf,
+		statusCode: &statusCode,
+	}
+}
+
+func (rww ResponseWriterWrapper) Write(buf []byte) (int, error) {
+	rww.body.Write(buf)
+	return (*rww.w).Write(buf)
+}
+
+// Header function overwrites the http.ResponseWriter Header() function
+func (rww ResponseWriterWrapper) Header() http.Header {
+	return (*rww.w).Header()
+
+}
+
+// WriteHeader function overwrites the http.ResponseWriter WriteHeader() function
+func (rww ResponseWriterWrapper) WriteHeader(statusCode int) {
+	*rww.statusCode = statusCode
+	(*rww.w).WriteHeader(statusCode)
+}
+
+func (rww ResponseWriterWrapper) String() string {
+	var buf bytes.Buffer
+
+	buf.WriteString("\nResponse: \n")
+
+	buf.WriteString("Headers:")
+	for k, v := range (*rww.w).Header() {
+		buf.WriteString(fmt.Sprintf("%s: %v", k, v))
+	}
+
+	buf.WriteString(fmt.Sprintf("\nStatus Code: %d", *(rww.statusCode)))
+
+	buf.WriteString("\nBody: \n")
+	buf.WriteString(rww.body.String())
+	return buf.String()
 }
 
 // /////////////// SETTINGS
@@ -89,12 +145,6 @@ func oauthAccessToken(w http.ResponseWriter, req *http.Request, ps httprouter.Pa
 	}
 
 	fmt.Println("found", found, "client_id", client_id, rancher_urls)
-
-	requestDump, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(string(requestDump))
 
 	target := gitlab_url + "/oauth/token?" + v.Encode()
 	http.Redirect(w, req, target, http.StatusTemporaryRedirect)

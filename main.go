@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
+	"github.com/urfave/negroni"
 	"github.com/xanzy/go-gitlab"
 	"net/http"
 	"net/http/httputil"
@@ -12,15 +13,18 @@ import (
 	"strings"
 )
 
-///////////////// LOGGING
+// /////////////// LOGGING
+func DebugLoggingMiddleware(rw http.ResponseWriter, r *http.Request, next http.HandlerFunc) {
+	// do some stuff before
+	fmt.Println(" ###### REQUEST #####")
+	requestDump, err := httputil.DumpRequest(r, true)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(string(requestDump))
 
-type Logger struct {
-	handler http.Handler
-}
-
-func (l *Logger) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.Method, r.URL.Path)
-	l.handler.ServeHTTP(w, r)
+	next(rw, r)
+	// do some stuff after
 }
 
 // /////////////// SETTINGS
@@ -44,20 +48,18 @@ func main() {
 	router.GET("/api/v3/teams/:id", apiV3TeamsId)
 	router.GET("/api/v3/search/users", apiV3SearchUsers)
 
+	n := negroni.New() // Includes some default middlewares
+	n.Use(negroni.HandlerFunc(DebugLoggingMiddleware))
+	n.UseHandler(router)
+
 	fmt.Println("Listening to " + listen_address)
-	if err := http.ListenAndServe(listen_address, &Logger{handler: router}); err != nil {
+	if err := http.ListenAndServe(listen_address, n); err != nil {
 		panic(err)
 	}
 }
 
 // /////////////// API
 func oauthAuthorize(w http.ResponseWriter, req *http.Request, ps httprouter.Params) {
-	requestDump, err := httputil.DumpRequest(req, true)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(string(requestDump))
-
 	redirect_uri := req.URL.Query().Get("redirect_uri")
 	client_id := req.URL.Query().Get("client_id")
 	rancher_urls[client_id] = redirect_uri

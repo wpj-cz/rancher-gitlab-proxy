@@ -323,6 +323,7 @@ type Team struct {
 	ID           int                    `json:"id,omitempty"`
 	Organization map[string]interface{} `json:"organization,omitempty"`
 	Name         string                 `json:"name,omitempty"`
+	AvatarURL    string                 `json:"avatar_url"`
 	Slug         string                 `json:"slug,omitempty"`
 }
 
@@ -369,5 +370,6 @@ func convertGitlabGroupToTeam(gitlabGroup *gitlab.Group) *Team {
 		Organization: org,
 		Name:         gitlabGroup.Name,
 		Slug:         gitlabGroup.Path,
+		AvatarURL:    gitlabGroup.AvatarURL,
 	}
 }

@@ -11,5 +11,4 @@ services:
     restart: always
     environment:
       GITLAB_URL: "https://gitlab.url"
-      RANCHER_URL: "https://rancher.url"
       LISTEN_ADDRESS: "0.0.0.0:8888"

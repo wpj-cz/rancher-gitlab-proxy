@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
 	"encoding/json"
 	"fmt"
 	"github.com/julienschmidt/httprouter"
@@ -343,7 +344,7 @@ func convertGitlabUserToAccount(gitlabUser *gitlab.User) *Account {
 		ID:        gitlabUser.ID,
 		Login:     gitlabUser.Username,
 		Name:      gitlabUser.Name,
-		AvatarURL: getImage(gitlabUser.AvatarURL),
+		AvatarURL: getImage(gitlabUser.AvatarURL, gitlabUser.Username),
 		HTMLURL:   "",
 		Type:      "user",
 	}
@@ -354,7 +355,7 @@ func convertGitlabGroupToAccount(gitlabGroup *gitlab.Group) *Account {
 		ID:        gitlabGroup.ID,
 		Login:     gitlabGroup.Path,
 		Name:      gitlabGroup.Name,
-		AvatarURL: getImage(gitlabGroup.AvatarURL),
+		AvatarURL: getImage(gitlabGroup.AvatarURL, gitlabGroup.Name),
 		HTMLURL:   "",
 		Type:      "team",
 	}
@@ -363,20 +364,23 @@ func convertGitlabGroupToAccount(gitlabGroup *gitlab.Group) *Account {
 func convertGitlabGroupToTeam(gitlabGroup *gitlab.Group) *Team {
 	org := make(map[string]interface{})
 	org["login"] = gitlabGroup.Path
-	org["avatar_url"] = getImage(gitlabGroup.AvatarURL)
+	org["avatar_url"] = getImage(gitlabGroup.AvatarURL, gitlabGroup.Name)
 
 	return &Team{
 		ID:           gitlabGroup.ID,
 		Organization: org,
 		Name:         gitlabGroup.Name,
 		Slug:         gitlabGroup.Path,
-		AvatarURL:    getImage(gitlabGroup.AvatarURL),
+		AvatarURL:    getImage(gitlabGroup.AvatarURL, gitlabGroup.Name),
 	}
 }
 
-func getImage(image string) string {
+func getImage(image string, name string) string {
 	if image != "" {
 		return image
 	}
-	return "https://secure.gravatar.com/avatar/18742e6f4409949dfc6a91e95d539f7b?s=80&d=identicon&s=80"
+
+	hash := md5.Sum([]byte(name))
+
+	return fmt.Sprintf("https://secure.gravatar.com/avatar/%x?s=80&d=identicon&s=80", hash)
 }
